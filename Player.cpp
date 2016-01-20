@@ -1,5 +1,4 @@
 #include "Player.h"
-#include "SpriteBatch.h"
 #include "Level.h"
 #include <SDL2/SDL_keycode.h>
 Player::Player()
@@ -15,7 +14,6 @@ void Player::init(const glm::vec2 &pos, const glm::vec2 &size, const std::string
 {
 	m_pos = pos;
 	m_size = size;
-	m_texture = ResourceManager::getTexture(texturePath);
 }
 
 bool Player::intersects(const Block& block)
@@ -231,7 +229,3 @@ void Player::update(float frameTime, const Level& level, InputManager* inputMana
 	
 }
 
-void Player::draw(SpriteBatch &spriteBatch)
-{
-	spriteBatch.draw(glm::vec4(m_pos.x, m_pos.y, m_size.x, m_size.y), m_uvRect, m_texture.id, 0, m_color);
-}

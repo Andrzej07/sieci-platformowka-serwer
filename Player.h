@@ -1,9 +1,5 @@
 #pragma once
 #include <glm/glm.hpp>
-#include "Vertex.h"
-#include "ResourceManager.h"
-#include "InputManager.h"
-class SpriteBatch;
 class Level;
 struct Block;
 class Player
@@ -14,7 +10,6 @@ public:
 
 	void init(const glm::vec2 &pos, const glm::vec2 &size, const std::string &texturePath);
 	void update(float frameTime, const Level& level, InputManager* inputManager);
-	void draw(SpriteBatch &spriteBatch);
 
 	glm::vec2 getPosition() const { return m_pos; }
 private:
@@ -37,8 +32,5 @@ private:
 
 	glm::vec2 m_pos;  // bottom left corner
 	glm::vec2 m_size;
-	glm::vec4 m_uvRect = glm::vec4(0,0,1,1);
-	ColorRGBA8 m_color = ColorRGBA8(255,0,0,255);
-	GLTexture m_texture;
 };
 

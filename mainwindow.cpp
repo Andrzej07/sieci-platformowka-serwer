@@ -109,7 +109,7 @@ void MainWindow::startLoop()
      */
     while(isRunning)
     {
-        rcvd = recv(mainSocket, buffer, 1024, 0);
+        int rcvd = recv(mainSocket, buffer, 1024, 0);
         send(mainSocket, buffer, rcvd, 0);
         QCoreApplication::processEvents();
     }

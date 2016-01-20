@@ -2,8 +2,6 @@
 #include <glm/glm.hpp>
 #include <string>
 #include <vector>
-#include "Vertex.h"
-#include "ResourceManager.h"
 
 class SpriteBatch;
 struct Block
@@ -21,14 +19,10 @@ public:
 	Level();
 	~Level();
 
-	void draw(SpriteBatch& spriteBatch);
-
 	glm::vec2 load(const std::string &filepath);
 	const std::vector<Block>& getLevelData() const { return m_levelData; }
 
 private:
 	std::vector<Block> m_levelData;
-	ColorRGBA8 m_color = ColorRGBA8(0,0,0,255);
-	GLTexture m_texture;
 };
 

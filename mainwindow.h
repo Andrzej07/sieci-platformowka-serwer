@@ -26,6 +26,7 @@ private:
     void findLevels();
     int createSocket();
     void configSocket(int sock);
+    void startLoop();
 
     bool isRunning = false;
     int mainSocket;
