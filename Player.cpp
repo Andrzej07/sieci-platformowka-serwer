@@ -1,6 +1,5 @@
 #include "Player.h"
 #include "Level.h"
-#include <SDL2/SDL_keycode.h>
 Player::Player()
 {
 }
@@ -10,7 +9,7 @@ Player::~Player()
 {
 }
 
-void Player::init(const glm::vec2 &pos, const glm::vec2 &size, const std::string &texturePath)
+void Player::init(const glm::vec2 &pos, const glm::vec2 &size)
 {
 	m_pos = pos;
 	m_size = size;
@@ -78,7 +77,7 @@ void Player::resolveCollisions(const Level& level, bool& isGrounded)
 	const std::vector<Block> *levelData = &level.getLevelData();
 	std::vector<Block> collidingBlocks;
 	collidingBlocks.reserve(4);
-	for (auto& block : *levelData)
+    for (Block& block : *levelData)
 	{
 		if (intersects(block))
 			collidingBlocks.push_back(block);
@@ -174,20 +173,20 @@ void Player::resolveCollisions(const Level& level, bool& isGrounded)
 }
 
 
-void Player::update(float frameTime, const Level& level, InputManager* inputManager)
+void Player::update(float frameTime, const Level& level, char input)
 {
 	// Update position
 	m_pos += frameTime * m_velocity;
 
 	// Update velocity based on input
-	if (inputManager->isKeyDown(SDLK_a))
+    if (input == 'a')
 	{
 		m_velocity -= glm::vec2(m_acceleration.x, 0);
 		if (m_velocity.x < -m_maxVelocity.x)
 			m_velocity.x = -m_maxVelocity.x;
 
 	}
-	else if (inputManager->isKeyDown(SDLK_d))
+    else if (input == 'd')
 	{
 		m_velocity += glm::vec2(m_acceleration.x, 0);
 		if (m_velocity.x > m_maxVelocity.x)
@@ -219,7 +218,7 @@ void Player::update(float frameTime, const Level& level, InputManager* inputMana
 	{
 	// Can jump
 		m_velocity.y = 0.0f;
-		if (inputManager->isKeyPressed(SDLK_w))
+        if (input == 'w')
 		{
 			//m_pos.y += m_acceleration.y;
 			m_velocity.y += m_acceleration.y * 20;

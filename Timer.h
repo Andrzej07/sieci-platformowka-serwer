@@ -1,4 +1,5 @@
 #pragma once
+#include <QElapsedTimer>
 class Timer
 {
 public:
@@ -15,7 +16,7 @@ private:
 	float m_accumulatedTime = 0.0f;
 	const float TIME_CHUNK = 16.66f / 2000.0f;
 
-	unsigned int m_startTicks = 0;
-	unsigned int m_lastFrameTime = 1;
+    QElapsedTimer *timer;
+    qint64 m_lastFrameTime = 1;
 };
 

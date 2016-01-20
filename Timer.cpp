@@ -1,5 +1,4 @@
 #include "Timer.h"
-#include <SDL2/SDL.h>
 
 Timer::Timer()
 {
@@ -8,15 +7,21 @@ Timer::Timer()
 
 Timer::~Timer()
 {
+    if(timer)
+        delete timer;
 }
 
 void Timer::start()
 {
-	m_startTicks = SDL_GetTicks();
+    //m_startTicks = SDL_GetTicks();
+    timer = new QElapsedTimer();
+    timer->start();
 }
 void Timer::stop()
 {
-	m_lastFrameTime = SDL_GetTicks() - m_startTicks;
+    //m_lastFrameTime = SDL_GetTicks() - m_startTicks;
+    m_lastFrameTime = timer->nsecsElapsed() / 1000;
+    delete timer;
 	m_accumulatedTime += m_lastFrameTime / 1000.0f;
 }
 unsigned int Timer::getFrameTime()

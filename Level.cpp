@@ -13,14 +13,16 @@ Level::~Level()
 glm::vec2 Level::load(const std::string &filepath)
 {
     std::ifstream file;
-    file.open(filepath, std::ios_base::in);
+    file.open(filepath.c_str(), std::ios_base::in);
 
     float startx,starty, stopx,stopy;
-    file>>startx>>starty>>stopx>>stopy;
+    if(!file.eof())
+        file>>startx>>starty>>stopx>>stopy;
+
     while (!file.eof()){
         float cornerx,cornery,sizex,sizey;
         file>>cornerx>>cornery>>sizex>>sizey;
-        m_levelData.emplace_back(glm::vec2(cornerx,cornery), glm::vec2(sizex,sizey));
+        m_levelData.push_back(Block(glm::vec2(cornerx,cornery), glm::vec2(sizex,sizey)));
     }
 /*    // todo: read finish line ?
 	for (int i = 0; i < 500; ++i)

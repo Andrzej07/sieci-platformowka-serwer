@@ -2,6 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <Timer.h>
+#include <Level.h>
+#include <Player.h>
 
 namespace Ui {
 class MainWindow;
@@ -23,13 +26,18 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
+    void update(float deltaTime);
     void findLevels();
     int createSocket();
     void configSocket(int sock);
     void startLoop();
 
-    bool isRunning = false;
-    int mainSocket;
+    bool m_isRunning = false;
+    int m_mainSocket;
+    Timer m_timer;
+    Level m_level;
+    Player m_player1;
+    Player m_player2;
 };
 
 #endif // MAINWINDOW_H

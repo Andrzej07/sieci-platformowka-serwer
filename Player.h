@@ -8,8 +8,8 @@ public:
 	Player();
 	~Player();
 
-	void init(const glm::vec2 &pos, const glm::vec2 &size, const std::string &texturePath);
-	void update(float frameTime, const Level& level, InputManager* inputManager);
+    void init(const glm::vec2 &pos, const glm::vec2 &size);
+    void update(float frameTime, const Level& level, char input);
 
 	glm::vec2 getPosition() const { return m_pos; }
 private:
