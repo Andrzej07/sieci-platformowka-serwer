@@ -77,8 +77,10 @@ void Player::resolveCollisions(const Level& level, bool& isGrounded)
 	const std::vector<Block> *levelData = &level.getLevelData();
 	std::vector<Block> collidingBlocks;
 	collidingBlocks.reserve(4);
-    for (Block& block : *levelData)
+    //for (Block& block : *levelData)
+    for(int i = 0; i < levelData->size(); ++i)
 	{
+        Block block = (*levelData)[i];
 		if (intersects(block))
 			collidingBlocks.push_back(block);
 		if (!isGrounded)
@@ -94,7 +96,6 @@ void Player::resolveCollisions(const Level& level, bool& isGrounded)
 			isGrounded = x && y;
 		}
 	}
-
 	
 	for (size_t i = 0; i < collidingBlocks.size(); ++i)
 	{

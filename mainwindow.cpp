@@ -14,6 +14,8 @@
 #include <fcntl.h>
 
 #include <glm/glm.hpp>
+#include <QThread>
+#include <QElapsedTimer>
 
 #define PLAYER_SIZE 10
 
@@ -33,7 +35,6 @@ MainWindow::~MainWindow()
 void MainWindow::findLevels()
 {
     // TODO: VALIDATE CONTENTS OF THE TXT
-
     DIR* directory = opendir("./Levels");
     if(directory == NULL)
     {
@@ -131,14 +132,15 @@ void MainWindow::startLoop()
            // send(m_mainSocket, buffer, rcvd, 0);
         }
 
+        // Calculate physics
         while(m_timer.canGetTimeChunk())
         {
-           // update(m_timer.getTimeChunk());
-            //m_timer.getTimeChunk();
-            QCoreApplication::processEvents(QEventLoop::AllEvents);
+            update(m_timer.getTimeChunk());
         }
-        m_timer.stop();
 
+        m_timer.stop();
+        // Limit to 60fps
+        QThread::msleep(m_timer.getSleepTime());
     }
     ::close(m_mainSocket);
 }
@@ -148,7 +150,6 @@ void MainWindow::update(float deltaTime)
     m_player1.update(deltaTime, m_level, 'w');
     m_player2.update(deltaTime, m_level, 'd');
 }
-
 
 void MainWindow::on_buttonStart_clicked()
 {
