@@ -11,6 +11,7 @@ BUDOWANIE SERWERA
 *****
 
 (opcjonalnie)qmake platformowka-serwer.pro
+make clean
 make
 Umieścić folder Levels(ten sam co u klienta) razem z plikiem wykonywalnym
 Powinno działać
