@@ -196,6 +196,7 @@ void Player::update(float frameTime, const Level& level, char input)
 	else
 	{
 		// Dampen movement if not pressing keys
+        m_lastGroundedPosition = m_pos;
 		if (m_velocity.x > 0 && m_velocity.x > m_acceleration.x)
 			m_velocity -= glm::vec2(m_acceleration.x, 0);
 		else if (m_velocity.x < 0 && m_velocity.x < m_acceleration.x)
@@ -229,3 +230,7 @@ void Player::update(float frameTime, const Level& level, char input)
 	
 }
 
+void Player::returnToLastGround()
+{
+    m_pos = m_lastGroundedPosition;
+}

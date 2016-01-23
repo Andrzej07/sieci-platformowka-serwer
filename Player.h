@@ -10,11 +10,12 @@ public:
 
     void init(const glm::vec2 &pos, const glm::vec2 &size);
     void update(float frameTime, const Level& level, char input);
+    void returnToLastGround();
+    bool intersects(const Block& block);
 
 	glm::vec2 getPosition() const { return m_pos; }
 private:
 	//InputManager m_inputManager;
-	bool intersects(const Block& block);
 	bool hitsTopOf(const Block& block);
 	bool hitsRightOf(const Block& block);
 	bool hitsLeftOf(const Block& block);
@@ -29,6 +30,8 @@ private:
 	glm::vec2 m_acceleration = glm::vec2(16.5f, 5.0f); // running and jumping accel
 	glm::vec2 m_velocity = glm::vec2(0);
 	glm::vec2 m_maxVelocity = m_acceleration * 3.0f;
+
+    glm::vec2 m_lastGroundedPosition = glm::vec2(0);
 
 	glm::vec2 m_pos;  // bottom left corner
 	glm::vec2 m_size;
