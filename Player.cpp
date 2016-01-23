@@ -174,7 +174,7 @@ void Player::resolveCollisions(const Level& level, bool& isGrounded)
 }
 
 
-void Player::update(float frameTime, const Level& level, char input)
+void Player::update(float frameTime, const Level& level, char input, bool jump)
 {
 	// Update position
 	m_pos += frameTime * m_velocity;
@@ -196,7 +196,7 @@ void Player::update(float frameTime, const Level& level, char input)
 	else
 	{
 		// Dampen movement if not pressing keys
-        m_lastGroundedPosition = m_pos;
+
 		if (m_velocity.x > 0 && m_velocity.x > m_acceleration.x)
 			m_velocity -= glm::vec2(m_acceleration.x, 0);
 		else if (m_velocity.x < 0 && m_velocity.x < m_acceleration.x)
@@ -219,8 +219,9 @@ void Player::update(float frameTime, const Level& level, char input)
 	else
 	{
 	// Can jump
+        m_lastGroundedPosition = m_pos;
 		m_velocity.y = 0.0f;
-        if (input == 'w')
+        if (jump)
 		{
 			//m_pos.y += m_acceleration.y;
 			m_velocity.y += m_acceleration.y * 20;

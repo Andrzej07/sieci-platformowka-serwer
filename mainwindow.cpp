@@ -117,10 +117,6 @@ void MainWindow::startLoop()
     }
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 
-    socklen_t nTmp;
-    sockaddr_in stClientAddr;
-    nTmp = sizeof(stClientAddr);
-
     // Load level
     QString levelName = ui->comboBoxLevel->currentText();
     glm::vec2 playerPos = m_level.load("Levels/" + levelName.toStdString());
@@ -150,7 +146,7 @@ void MainWindow::startLoop()
         recvfrom(m_mainSocket, buf, 1, MSG_DONTWAIT, (struct sockaddr*)&p2_addr , &slen);
     char buf2[1];
     buf2[0]='2';
-    ui->textEditLog->appendPlainText(QString("Secondplayer connected: ") + inet_ntoa(p1_addr.sin_addr));
+    ui->textEditLog->appendPlainText(QString("Secondplayer connected: ") + inet_ntoa(p2_addr.sin_addr));
 
 
     sendto(m_mainSocket, buf2, strlen(buf2), 0, (struct sockaddr*) &p2_addr, slen);
@@ -184,44 +180,46 @@ void MainWindow::startLoop()
     buf[0]='g';
     sendto(m_mainSocket, buf, strlen(buf), 0, (struct sockaddr*) &p1_addr, slen);
     sendto(secondarySocket, buf, strlen(buf), 0, (struct sockaddr*) &p2_addr, slen);
-    /*
-     * float number = 123.2342;
-     * send(mainSocket, &number, sizeof(float),0);
-     */
+
     int i=1;
     float x[4];
     char p1button;
     char p2button;
     char charbuf;
-    bool haveSomethingToSend = false;
     while(m_isRunning)
     {
         // Keeps gui responsive
+        bool p1jump = false;
+        bool p2jump = false;
+
         QCoreApplication::processEvents(QEventLoop::AllEvents);
         i++;
         m_timer.start();
 
-        if (i%2==0){
+        if (i%1==0){
             i=0;
-            x[0]=m_player1.getPosition().x;x[1]=m_player1.getPosition().y;x[2]=m_player2.getPosition().x;x[3]=m_player2.getPosition().y;
+            x[0]=m_player1.getPosition().x;
+            x[1]=m_player1.getPosition().y;
+            x[2]=m_player2.getPosition().x;
+            x[3]=m_player2.getPosition().y;
             sendto(m_mainSocket, x, 4*sizeof(float), MSG_DONTWAIT, (struct sockaddr*) &p1_addr, slen);
-            x[0]=m_player2.getPosition().x;x[1]=m_player2.getPosition().y;x[2]=m_player1.getPosition().x;x[3]=m_player1.getPosition().y;
+            x[0]=m_player2.getPosition().x;
+            x[1]=m_player2.getPosition().y;
+            x[2]=m_player1.getPosition().x;
+            x[3]=m_player1.getPosition().y;
             sendto(secondarySocket, x, 4*sizeof(float), MSG_DONTWAIT, (struct sockaddr*) &p2_addr, slen);
         }
         p1button = 'x';
         p2button = 'x';
         while (recvfrom(m_mainSocket, &charbuf, sizeof(char), MSG_DONTWAIT, (struct sockaddr*)&p1_addr ,&slen)>0){
              p1button=charbuf;
+             if(p1button == 'w')
+                 p1jump=true;
         }
         while (recvfrom(secondarySocket, &charbuf, sizeof(char), MSG_DONTWAIT, (struct sockaddr*)&p2_addr ,&slen)>0){
             p2button=charbuf;
-        }
-
-        //char buffer[5];
-        //int rcvd = recv(m_mainSocket, buffer, 1024, 0);
-        if(haveSomethingToSend)
-        {
-           // send(m_mainSocket, buffer, rcvd, 0);
+            if(p2button == 'w')
+                p2jump=true;
         }
         // Calculate physics
         /*
@@ -236,12 +234,12 @@ void MainWindow::startLoop()
         }*/
         for(int i=0; i<2; ++i)
         {
-            update(16.66f / 2000.f,p1button,p2button);
+            update(16.66f / 2000.f,p1button,p2button, p1jump, p2jump);
             if(m_level.isBelowLevel(m_player1.getPosition()))
                     m_player1.returnToLastGround();
             if(m_level.isBelowLevel(m_player2.getPosition()))
                     m_player2.returnToLastGround();
-                if(m_player1.intersects(m_level.getFinishPoint()));
+            if(m_player1.intersects(m_level.getFinishPoint()));
         }
 
 
@@ -252,10 +250,10 @@ void MainWindow::startLoop()
     ::close(m_mainSocket);
 }
 
-void MainWindow::update(float deltaTime, char p1button, char p2button)
+void MainWindow::update(float deltaTime, char p1button, char p2button, bool p1jump, bool p2jump)
 {
-    m_player1.update(deltaTime, m_level, p1button);
-    m_player2.update(deltaTime, m_level, p2button);
+    m_player1.update(deltaTime, m_level, p1button, p1jump);
+    m_player2.update(deltaTime, m_level, p2button, p2jump);
 }
 
 void MainWindow::on_buttonStart_clicked()

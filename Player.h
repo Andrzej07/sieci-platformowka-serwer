@@ -9,7 +9,7 @@ public:
 	~Player();
 
     void init(const glm::vec2 &pos, const glm::vec2 &size);
-    void update(float frameTime, const Level& level, char input);
+    void update(float frameTime, const Level& level, char input, bool jump);
     void returnToLastGround();
     bool intersects(const Block& block);
 

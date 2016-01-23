@@ -26,7 +26,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
-    void update(float deltaTime,char p1button,char p2button);
+    void update(float deltaTime,char p1button,char p2button, bool p1jump, bool p2jump);
     void findLevels();
     int createSocket();
     void configSocket(int sock);
