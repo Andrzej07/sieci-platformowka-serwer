@@ -10,7 +10,7 @@ sudo apt-get install libglm-dev
 BUDOWANIE SERWERA
 *****
 
-qmake platformowka-serwer.pro
+(opcjonalnie)qmake platformowka-serwer.pro
 make
 Umieścić folder Levels(ten sam co u klienta) razem z plikiem wykonywalnym
 Powinno działać

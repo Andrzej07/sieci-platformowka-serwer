@@ -127,7 +127,7 @@ void MainWindow::startLoop()
     m_player2.init(playerPos, glm::vec2(PLAYER_SIZE));
 
     char buf[1];
-    buf[1]='n';
+    buf[0]='n';
     struct sockaddr_in p1_addr, p2_addr;
     unsigned int  slen=sizeof(stAddr);
     slen = sizeof(struct sockaddr_in);
