@@ -22,8 +22,12 @@ glm::vec2 Level::load(const std::string &filepath)
     while (!file.eof()){
         float cornerx,cornery,sizex,sizey;
         file>>cornerx>>cornery>>sizex>>sizey;
+        if (cornery < m_deathHeight)
+            m_deathHeight = cornery;
         m_levelData.push_back(Block(glm::vec2(cornerx,cornery), glm::vec2(sizex,sizey)));
     }
+    m_deathHeight -= 25.f;
+    m_finishPoint.pos = glm::vec2(stopx,stopy);
 /*    // todo: read finish line ?
 	for (int i = 0; i < 500; ++i)
     {
@@ -31,5 +35,14 @@ glm::vec2 Level::load(const std::string &filepath)
     }*/
     // todo: read blocks from file
     return glm::vec2(startx,starty);
+}
+
+bool Level::isBelowLevel(const glm::vec2& point)
+{
+    return point.y < m_deathHeight;
+}
+const Block& Level::getFinishPoint()
+{
+    return m_finishPoint;
 }
 
