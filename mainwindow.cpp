@@ -148,6 +148,9 @@ void MainWindow::startLoop()
     buf2[0]='2';
     ui->textEditLog->appendPlainText(QString("Secondplayer connected: ") + inet_ntoa(p2_addr.sin_addr));
 
+    sendto(m_mainSocket, levelName.toStdString().c_str(), levelName.length(), 0, (struct sockaddr*) &p2_addr, slen);
+    sendto(m_mainSocket, levelName.toStdString().c_str(), levelName.length(), 0, (struct sockaddr*) &p1_addr, slen);
+
 
     sendto(m_mainSocket, buf2, strlen(buf2), 0, (struct sockaddr*) &p2_addr, slen);
     sendto(m_mainSocket, buf, strlen(buf), 0, (struct sockaddr*) &p1_addr, slen);
@@ -232,14 +235,29 @@ void MainWindow::startLoop()
                     m_player2.returnToLastGround();
                 if(m_player1.intersects(m_level.getFinishPoint()));
         }*/
-        for(int i=0; i<2; ++i)
+        while(m_timer.canGetTimeChunk())
         {
-            update(16.66f / 2000.f,p1button,p2button, p1jump, p2jump);
+            update(m_timer.getTimeChunk(),p1button,p2button, p1jump, p2jump);
             if(m_level.isBelowLevel(m_player1.getPosition()))
                     m_player1.returnToLastGround();
             if(m_level.isBelowLevel(m_player2.getPosition()))
                     m_player2.returnToLastGround();
-            if(m_player1.intersects(m_level.getFinishPoint()));
+            if(m_player1.intersects(m_level.getFinishPoint()) || p1button=='q' ||
+                    p2button=='q' || m_player2.intersects(m_level.getFinishPoint())){
+                x[0]=666;
+                x[1]=666;
+                x[2]=666;
+                x[3]=666;
+                sendto(m_mainSocket, x, 4*sizeof(float), MSG_DONTWAIT, (struct sockaddr*) &p1_addr, slen);
+                x[0]=666;
+                x[1]=666;
+                x[2]=666;
+                x[3]=666;
+                sendto(secondarySocket, x, 4*sizeof(float), MSG_DONTWAIT, (struct sockaddr*) &p2_addr, slen);
+
+                ui->textEditLog->appendPlainText(QString("Someone won (or left :()!"));
+                m_isRunning = false;
+            }
         }
 
 
@@ -268,4 +286,10 @@ void MainWindow::on_buttonStop_clicked()
 {
     m_isRunning = false;
     ui->textEditLog->appendPlainText(QString("Server should stop.\n"));
+}
+
+void MainWindow::on_buttonRestart_clicked()
+{
+    on_buttonStop_clicked();
+    on_buttonStart_clicked();
 }

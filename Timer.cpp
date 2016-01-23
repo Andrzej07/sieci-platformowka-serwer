@@ -14,7 +14,7 @@ Timer::~Timer()
 void Timer::start()
 {
     //m_startTicks = SDL_GetTicks();
-    int m_timeChunks = UPDATES_PER_FRAME;
+    m_timeChunks = UPDATES_PER_FRAME;
     timer = new QElapsedTimer();
     timer->start();
 }

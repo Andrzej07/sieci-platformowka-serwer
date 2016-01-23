@@ -78,7 +78,7 @@ void Player::resolveCollisions(const Level& level, bool& isGrounded)
 	std::vector<Block> collidingBlocks;
 	collidingBlocks.reserve(4);
     //for (Block& block : *levelData)
-    for(int i = 0; i < levelData->size(); ++i)
+    for(unsigned int i = 0; i < levelData->size(); ++i)
 	{
         Block block = (*levelData)[i];
 		if (intersects(block))
