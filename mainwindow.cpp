@@ -32,6 +32,8 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+    if(m_level)
+        delete m_level;
 }
 
 void MainWindow::findLevels()
@@ -119,7 +121,8 @@ void MainWindow::startLoop()
 
     // Load level
     QString levelName = ui->comboBoxLevel->currentText();
-    glm::vec2 playerPos = m_level.load("Levels/" + levelName.toStdString());
+    m_level = new Level();
+    glm::vec2 playerPos = m_level->load("Levels/" + levelName.toStdString());
 
     ui->textEditLog->appendPlainText(QString("Loaded level.\n"));
 
@@ -148,12 +151,11 @@ void MainWindow::startLoop()
     buf2[0]='2';
     ui->textEditLog->appendPlainText(QString("Secondplayer connected: ") + inet_ntoa(p2_addr.sin_addr));
 
-    sendto(m_mainSocket, levelName.toStdString().c_str(), levelName.length(), 0, (struct sockaddr*) &p2_addr, slen);
-    sendto(m_mainSocket, levelName.toStdString().c_str(), levelName.length(), 0, (struct sockaddr*) &p1_addr, slen);
-
-
     sendto(m_mainSocket, buf2, strlen(buf2), 0, (struct sockaddr*) &p2_addr, slen);
     sendto(m_mainSocket, buf, strlen(buf), 0, (struct sockaddr*) &p1_addr, slen);
+
+    sendto(m_mainSocket, levelName.toStdString().c_str(), levelName.length(), 0, (struct sockaddr*) &p1_addr, slen);
+    sendto(secondarySocket, levelName.toStdString().c_str(), levelName.length(), 0, (struct sockaddr*) &p2_addr, slen);
     ui->textEditLog->appendPlainText(QString("Waiting for readiness"));
 
     QCoreApplication::processEvents(QEventLoop::AllEvents);
@@ -225,25 +227,15 @@ void MainWindow::startLoop()
                 p2jump=true;
         }
         // Calculate physics
-        /*
-        while(m_timer.canGetTimeChunk())
-        {
-            update(m_timer.getTimeChunk(),p1button,p2button);
-            if(m_level.isBelowLevel(m_player1.getPosition()))
-                    m_player1.returnToLastGround();
-            if(m_level.isBelowLevel(m_player2.getPosition()))
-                    m_player2.returnToLastGround();
-                if(m_player1.intersects(m_level.getFinishPoint()));
-        }*/
         while(m_timer.canGetTimeChunk())
         {
             update(m_timer.getTimeChunk(),p1button,p2button, p1jump, p2jump);
-            if(m_level.isBelowLevel(m_player1.getPosition()))
+            if(m_level->isBelowLevel(m_player1.getPosition()))
                     m_player1.returnToLastGround();
-            if(m_level.isBelowLevel(m_player2.getPosition()))
+            if(m_level->isBelowLevel(m_player2.getPosition()))
                     m_player2.returnToLastGround();
-            if(m_player1.intersects(m_level.getFinishPoint()) || p1button=='q' ||
-                    p2button=='q' || m_player2.intersects(m_level.getFinishPoint())){
+            if(m_player1.intersects(m_level->getFinishPoint()) || p1button=='q' ||
+                    p2button=='q' || m_player2.intersects(m_level->getFinishPoint())){
                 x[0]=666;
                 x[1]=666;
                 x[2]=666;
@@ -265,13 +257,15 @@ void MainWindow::startLoop()
         // Limit to 60fps
         QThread::msleep(m_timer.getSleepTime());
     }
+    if(m_level)
+        delete m_level;
     ::close(m_mainSocket);
 }
 
 void MainWindow::update(float deltaTime, char p1button, char p2button, bool p1jump, bool p2jump)
 {
-    m_player1.update(deltaTime, m_level, p1button, p1jump);
-    m_player2.update(deltaTime, m_level, p2button, p2jump);
+    m_player1.update(deltaTime, *m_level, p1button, p1jump);
+    m_player2.update(deltaTime, *m_level, p2button, p2jump);
 }
 
 void MainWindow::on_buttonStart_clicked()
