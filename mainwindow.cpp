@@ -92,24 +92,24 @@ void MainWindow::startLoop()
     int secondarySocket = createSocket();
     configSocket(secondarySocket);
 
-    /* address structure */
+    /* SOCKET FOR PLAYER 1 */
     memset(&stAddr, 0, sizeof(struct sockaddr));
     stAddr.sin_family = AF_INET;
     stAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     stAddr.sin_port = htons(SERVER_PORT);
 
+    /* SOCKET FOR PLAYER 2 */
     memset(&stAddr2, 0, sizeof(struct sockaddr));
     stAddr2.sin_family = AF_INET;
     stAddr2.sin_addr.s_addr = htonl(INADDR_ANY);
     stAddr2.sin_port = htons(SERVER_PORT2);
-    /* bind a name to a socket */
+
     nBind = bind(m_mainSocket, (struct sockaddr*)&stAddr, sizeof(struct sockaddr));
     if (nBind < 0)
     {
        ui->textEditLog->appendPlainText(QString("Can't bind a name to a socket.\n"));
        exit(1);
     }
-
 
     nBind = bind(secondarySocket, (struct sockaddr*)&stAddr2, sizeof(struct sockaddr));
     if (nBind < 0)
@@ -123,11 +123,10 @@ void MainWindow::startLoop()
     QString levelName = ui->comboBoxLevel->currentText();
     m_level = new Level();
     glm::vec2 playerPos = m_level->load("Levels/" + levelName.toStdString());
-
     ui->textEditLog->appendPlainText(QString("Loaded level.\n"));
-
     m_player1.init(playerPos, glm::vec2(PLAYER_SIZE));
     m_player2.init(playerPos, glm::vec2(PLAYER_SIZE));
+
 
     char buf[1];
     buf[0]='n';
@@ -136,8 +135,13 @@ void MainWindow::startLoop()
     slen = sizeof(struct sockaddr_in);
     ui->textEditLog->appendPlainText(QString("Waiting for clients."));
 
+
     while (buf[0]!='c')//nie otrzymano prośby polaczenia
+    {
         recvfrom(m_mainSocket, buf, 1, MSG_DONTWAIT, (struct sockaddr*)&p1_addr ,&slen);
+        QCoreApplication::processEvents(QEventLoop::AllEvents);
+        sleep(1);
+    }
     buf[0]='1';
     ui->textEditLog->appendPlainText(QString("First player connected: ") + inet_ntoa(p1_addr.sin_addr));
 
@@ -146,21 +150,28 @@ void MainWindow::startLoop()
 
 
     while (buf[0]!='c')//nie otrzymano prośby polaczenia
+    {
         recvfrom(m_mainSocket, buf, 1, MSG_DONTWAIT, (struct sockaddr*)&p2_addr , &slen);
+        QCoreApplication::processEvents(QEventLoop::AllEvents);
+        sleep(1);
+    }
     char buf2[1];
     buf2[0]='2';
-    ui->textEditLog->appendPlainText(QString("Secondplayer connected: ") + inet_ntoa(p2_addr.sin_addr));
+    ui->textEditLog->appendPlainText(QString("Second player connected: ") + inet_ntoa(p2_addr.sin_addr));
 
+    // Give players their numbers
     sendto(m_mainSocket, buf2, strlen(buf2), 0, (struct sockaddr*) &p2_addr, slen);
     sendto(m_mainSocket, buf, strlen(buf), 0, (struct sockaddr*) &p1_addr, slen);
 
+    // Sen client level name (it should have the same level files)
     sendto(m_mainSocket, levelName.toStdString().c_str(), levelName.length(), 0, (struct sockaddr*) &p1_addr, slen);
     sendto(secondarySocket, levelName.toStdString().c_str(), levelName.length(), 0, (struct sockaddr*) &p2_addr, slen);
     ui->textEditLog->appendPlainText(QString("Waiting for readiness"));
 
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 
-    //chceck if players are ready
+    //Clients load levels and initialize players
+    //Wait until they are ready
 
     buf2[0]='0';
     while (buf[0]!='r' || buf2[0]!='r'){
@@ -178,10 +189,11 @@ void MainWindow::startLoop()
                 QCoreApplication::processEvents(QEventLoop::AllEvents);
             }
         }
+
     }
 
-    ui->textEditLog->appendPlainText(QString("Time to start this shit!  "));
-    //go!
+    ui->textEditLog->appendPlainText(QString("The game has started!  "));
+    //Send 'go' signal to clientss
     buf[0]='g';
     sendto(m_mainSocket, buf, strlen(buf), 0, (struct sockaddr*) &p1_addr, slen);
     sendto(secondarySocket, buf, strlen(buf), 0, (struct sockaddr*) &p2_addr, slen);
@@ -193,14 +205,14 @@ void MainWindow::startLoop()
     char charbuf;
     while(m_isRunning)
     {
-        // Keeps gui responsive
         bool p1jump = false;
         bool p2jump = false;
-
+        // Keeps gui responsive
         QCoreApplication::processEvents(QEventLoop::AllEvents);
         i++;
         m_timer.start();
 
+        // Send players their positions; 'if' is useless now
         if (i%1==0){
             i=0;
             x[0]=m_player1.getPosition().x;
@@ -216,6 +228,7 @@ void MainWindow::startLoop()
         }
         p1button = 'x';
         p2button = 'x';
+        // Read input
         while (recvfrom(m_mainSocket, &charbuf, sizeof(char), MSG_DONTWAIT, (struct sockaddr*)&p1_addr ,&slen)>0){
              p1button=charbuf;
              if(p1button == 'w')
@@ -230,10 +243,12 @@ void MainWindow::startLoop()
         while(m_timer.canGetTimeChunk())
         {
             update(m_timer.getTimeChunk(),p1button,p2button, p1jump, p2jump);
+            // Respawn player if he falls
             if(m_level->isBelowLevel(m_player1.getPosition()))
                     m_player1.returnToLastGround();
             if(m_level->isBelowLevel(m_player2.getPosition()))
                     m_player2.returnToLastGround();
+            // Check if the game should finish
             if(m_player1.intersects(m_level->getFinishPoint()) || p1button=='q' ||
                     p2button=='q' || m_player2.intersects(m_level->getFinishPoint())){
                 x[0]=666;
